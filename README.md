@@ -34,7 +34,6 @@ awsllama/
 ├── config.py               # Interactive CLI: collects config, drives Terraform + Ansible
 ├── README.md
 ├── .gitignore
-├── terraform.tfstate        # local state (gitignored)
 ├── myenv/                   # Python virtual environment (gitignored)
 ├── __pycache__/             # (gitignored)
 ├── ansible/
@@ -46,7 +45,6 @@ awsllama/
     ├── provider.tf          # AWS provider
     ├── locals.tf            # Fetches your public IP for SSH whitelisting
     ├── output.tf            # Outputs (public IP, instance ID)
-    ├── inventory.tpl         # Ansible inventory template
     └── terraform.tfvars      # Generated per-run config (gitignored)
 ```
 
@@ -74,7 +72,6 @@ Follow the prompts, then wait — the script handles provisioning, inventory gen
 
 ## Known limitations
 
-- The security group in `main.tf` allows SSH only from your current IP (via `locals.tf`), but port `11434` (Ollama) isn't restricted in that same way — you may want to add a similar rule.
 - `config.py` hardcodes `ansible_user=ubuntu` in `create_inventory()` — fine for Ubuntu AMIs, but the `get_ssh_user()` helper that detects the right user per-AMI isn't actually wired in yet.
 - **State is local only** (`terraform.tfstate` on disk, gitignored). There's no remote backend, so state isn't shared, versioned, or locked — fine for a solo demo, not for a team/production setup.
 - VPC/subnet must already exist; the CLI only consumes a subnet ID, it doesn't provision networking.
@@ -82,9 +79,8 @@ Follow the prompts, then wait — the script handles provisioning, inventory gen
 
 ## Future scope
 
-- **Remote state backend** — move state to an S3 bucket with DynamoDB for locking, so state is durable, shareable, and locked against concurrent applies. This is the most valuable next step and a very standard thing to be asked about in interviews.
+- **Remote state backend** — move state to an S3 bucket with DynamoDB for locking, so state is durable, shareable, and locked against concurrent applies.
 - **Automatic VPC/subnet provisioning** — optionally create a VPC + subnet if the user doesn't already have one, instead of requiring an existing subnet ID.
 - **Local pre-flight checks** — an install/setup step that verifies `aws --version`, valid AWS credentials (`aws sts get-caller-identity`), Terraform, and Ansible are present before doing anything, with clear errors if not.
 - **Persisted user config** — remember the chosen VPC/subnet/region across runs (e.g. a local config file) so repeat deployments don't need re-entering the same values.
-- **Restrict port 11434** the same way SSH is restricted, instead of leaving it open.
 - **CI validation** — `terraform validate` / `terraform fmt -check` on push via GitHub Actions.
