@@ -1,0 +1,35 @@
+- name: my first playbook
+  hosts: ollama
+  become: yes
+  tasks:
+    - name: ping
+      ansible.builtin.ping:
+
+    - name: Check if Ollama is installed
+      stat:
+        path: /usr/local/bin/ollama
+      register: ollama
+
+    - name: download ollama
+      ansible.builtin.shell: "curl -fsSL https://ollama.com/install.sh | sh"
+      when: not ollama.stat.exists
+
+    - name: Configure Ollama host
+      lineinfile:
+        path: /etc/systemd/system/ollama.service
+        regexp: '^Environment="OLLAMA_HOST='
+        insertafter: '^\[Service\]'
+        line: 'Environment="OLLAMA_HOST=0.0.0.0:11434"'
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Restart Ollama
+      systemd:
+        name: ollama
+        state: restarted
+
+    - name: command
+      ansible.builtin.command:
+        cmd: "ollama pull {{ ollama_model }}"
