@@ -5,13 +5,23 @@ import json
 import socket
 import time
 
+FIELD_LABELS = {
+    "ami_id": "AMI ID (Ubuntu 24.04)",
+    "aws_region": "AWS Region",
+    "instance_type": "EC2 Instance Type",
+    "key_name": "SSH Key Pair Name",
+    "subnet_id": "Subnet ID",
+    "private_key_path": "Private Key Path",
+    "model_name": "Ollama Model"
+}
+
 CONFIG_FIELDS = {
     "aws_region": ("ap-south-1", ["us-east-1", "us-west-2", "eu-west-1"]),
     "instance_type": ("t3.micro", ["t3.small", "t3.medium"]),
     "ami_id": ("ami-01a00762f46d584a1", []),
-    "key_name": ("keypair1", []),
-    "subnet_id": ("subnet-0675df46f50e65c62", []),
-    "private_key_path": ("/home/sooryawsl/.ssh/keypair1.pem", []),
+    "key_name": ("", []),
+    "subnet_id": ("", []),
+    "private_key_path": ("", []),
     "model_name": ("smollm:135m",["llama3.2","llama3.1:8b", "mistral", "gemma2"]),
 }
 
@@ -21,12 +31,15 @@ def banner():
 
 
 def ask_value(name, default, choices):
-    print(f"\n{name}")
+    print(f"\n{FIELD_LABELS.get(name, name)}")
 
-    options = [default] + choices
+    options = choices.copy()
+
+    if default:
+        options.insert(0, default)
 
     for i, value in enumerate(options, 1):
-        mark = " (default)" if i == 1 else ""
+        mark = " (default)" if default and value == default else ""
         print(f"{i}. {value}{mark}")
 
     print(f"{len(options)+1}. Custom value")
@@ -44,7 +57,6 @@ def ask_value(name, default, choices):
                 return input(f"Enter {name}: ")
 
         print("Invalid choice. Try again.")
-
 
 def collect_config():
     config = {}

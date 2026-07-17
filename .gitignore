@@ -1,10 +1,9 @@
-# --- Secrets: never commit these ---
 *.pem
 *.key
 .env
 .env.*
 
-# --- Terraform state (contains resource IDs, IPs, sometimes secrets) ---
+# Terraform state
 *.tfstate
 *.tfstate.*
 terraform_tfstate.backup
@@ -12,8 +11,6 @@ terraform_tfstate.backup
 .terraform.lock.hcl
 crash.log
 crash.*.log
-
-# --- Per-deployment generated config (regenerated each run) ---
 terraform/terraform.tfvars
 ansible/inventory.ini
 
@@ -24,6 +21,5 @@ myenv/
 venv/
 .venv/
 
-# --- OS / editor cruft ---
 .DS_Store
 .vscode/
